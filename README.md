@@ -17,18 +17,47 @@ A minimal, clean Docker Compose setup for running Langfuse and LiteLLM with call
 │   ├── .env.example
 │   └── README.md
 ├── start.sh                # Automated setup script
+├── stop.sh                 # Service management script
 ├── .gitignore
 └── README.md
 ```
 
-## Overview
+## Prerequisites
 
-This setup provides:
+Before getting started, ensure you have:
 
-- **Langfuse**: Open-source LLM observability and tracing platform
-- **LiteLLM**: LLM proxy with unified API and callback logging
-- **Integrated Logging**: LiteLLM automatically logs all requests to Langfuse
-- **Automated Setup**: One-command setup with automatic organization, project, and API key creation
+- **Docker**: Version 20.10 or later
+- **Docker Compose**: Version 2.0 or later
+- **OpenAI API Key**: Required for LiteLLM to proxy requests to OpenAI models
+- **Git**: For cloning this repository
+
+### System Requirements
+
+- **RAM**: At least 4GB available
+- **Disk Space**: At least 5GB free space for Docker images and data
+- **Ports**: Ensure ports 3000, 3030, 4000, 5432, 5442, 6379, 8123, 9090, 9091 are available
+
+## Installation
+
+1. **Clone the repository**:
+   ```bash
+   git clone <repository-url>
+   cd llm-infra
+   ```
+
+2. **Make scripts executable**:
+   ```bash
+   chmod +x start.sh stop.sh
+   ```
+
+3. **Add your OpenAI API key**:
+   ```bash
+   # Edit the LiteLLM environment file
+   nano litellm/.env.example
+   
+   # Add your OpenAI API key:
+   OPENAI_API_KEY=your-openai-api-key-here
+   ```
 
 ## Quick Start
 
@@ -121,7 +150,80 @@ curl -X POST http://localhost:4000/chat/completions \
 
 Check Langfuse at http://localhost:3000 to see the traces.
 
+## Testing the Setup
+
+### 1. Test LiteLLM API
+
+Make a test request to LiteLLM:
+
+```bash
+curl -X POST http://localhost:4000/chat/completions \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer sk-1234" \
+  -d '{
+    "model": "gpt-4o-mini",
+    "messages": [{"role": "user", "content": "Hello, world!"}]
+  }'
+```
+
+Expected response:
+```json
+{
+  "id": "chatcmpl-...",
+  "object": "chat.completion",
+  "created": 1234567890,
+  "model": "gpt-4o-mini",
+  "choices": [{
+    "index": 0,
+    "message": {
+      "role": "assistant",
+      "content": "Hello! How can I help you today?"
+    },
+    "finish_reason": "stop"
+  }],
+  "usage": {
+    "prompt_tokens": 13,
+    "completion_tokens": 8,
+    "total_tokens": 21
+  }
+}
+```
+
+### 2. Verify Tracing in Langfuse
+
+1. Open http://localhost:3000 in your browser
+2. Log in with:
+   - Email: `admin@example.com`
+   - Password: `admin123`
+3. Navigate to the "Traces" section
+4. You should see the test request you just made
+
+### 3. Check Service Health
+
+```bash
+# Check all running containers
+docker ps
+
+# Check Langfuse health
+curl http://localhost:3000
+
+# Check LiteLLM health
+curl http://localhost:4000/health/liveliness
+```
+
 ## Stopping Services
+
+### Using the Stop Script (Recommended)
+
+```bash
+# Stop all services
+./stop.sh
+
+# Stop all services and remove all data (including databases)
+./stop.sh -v
+```
+
+### Manual Stop
 
 ```bash
 # Stop all services
@@ -130,6 +232,99 @@ docker-compose -f langfuse/docker-compose.yml -f litellm/docker-compose.yml down
 # Stop and remove volumes (deletes all data)
 docker-compose -f langfuse/docker-compose.yml -f litellm/docker-compose.yml down -v
 ```
+
+## Production Considerations
+
+### Security
+
+- **Change default passwords**: Update admin credentials in Langfuse
+- **Use environment-specific configs**: Don't use `.env.example` files in production
+- **Secure API keys**: Store secrets in a proper secret management system
+- **Network isolation**: Configure proper firewall rules and network segmentation
+
+### Performance
+
+- **Resource allocation**: Increase Docker resource limits for production workloads
+- **Database tuning**: Configure PostgreSQL and ClickHouse for your scale
+- **Monitoring**: Set up proper monitoring and alerting for all services
+- **Backup strategy**: Implement regular backups for databases and persistent data
+
+### Configuration Changes
+
+For production deployment:
+
+1. **Langfuse**:
+   - Set `LANGFUSE_INIT_ORG_NAME`, `LANGFUSE_INIT_PROJECT_NAME` appropriately
+   - Configure external database URLs
+   - Set up proper authentication and authorization
+
+2. **LiteLLM**:
+   - Configure multiple LLM providers
+   - Set up rate limiting and cost tracking
+   - Configure proper logging and monitoring
+
+3. **Infrastructure**:
+   - Use managed databases (RDS, Cloud SQL, etc.)
+   - Set up load balancers and reverse proxies
+   - Configure SSL/TLS certificates
+   - Implement auto-scaling
+
+### Port Conflicts
+
+If you encounter port conflicts:
+
+- **Port 9090**: Both MinIO (Langfuse) and Prometheus (LiteLLM) use this port
+  - Solution: Change Prometheus port in `litellm/docker-compose.yml`
+- **Database ports**: Ensure 5432 and 5442 are available
+- **Redis port**: Ensure 6379 is available
+
+## Troubleshooting
+
+### Common Issues
+
+1. **Services won't start**:
+   - Check Docker and Docker Compose versions
+   - Ensure ports are available: `netstat -tulpn | grep :3000`
+   - Check disk space: `df -h`
+
+2. **Langfuse not accessible**:
+   - Wait for services to fully start (can take 2-3 minutes)
+   - Check logs: `docker-compose -f langfuse/docker-compose.yml logs`
+
+3. **LiteLLM API errors**:
+   - Verify OpenAI API key is set correctly
+   - Check LiteLLM logs: `docker-compose -f litellm/docker-compose.yml logs`
+
+4. **Tracing not appearing in Langfuse**:
+   - Verify Langfuse credentials in LiteLLM config
+   - Check network connectivity between containers
+   - Ensure Langfuse is healthy before starting LiteLLM
+
+### Logs
+
+```bash
+# View all logs
+docker-compose -f langfuse/docker-compose.yml -f litellm/docker-compose.yml logs
+
+# View specific service logs
+docker-compose -f langfuse/docker-compose.yml logs langfuse-web
+docker-compose -f litellm/docker-compose.yml logs litellm
+
+# Follow logs in real-time
+docker-compose -f langfuse/docker-compose.yml logs -f
+```
+
+## Contributing
+
+1. Fork the repository
+2. Create a feature branch
+3. Make your changes
+4. Test thoroughly
+5. Submit a pull request
+
+## License
+
+See LICENSE file for details.
 
 ## Configuration
 
