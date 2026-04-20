@@ -21,3 +21,6 @@ langfuse_*
 # Logs
 *.log
 logs/
+
+# Data directories
+litellm/data/
