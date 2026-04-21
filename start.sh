@@ -165,7 +165,7 @@ EOF
         exit 1
     fi
 
-    if ! check_service_health "Langfuse Worker" "http://localhost:3030/api/public/health"; then
+    if ! check_service_health "Langfuse Worker" "http://localhost:3030"; then
         print_error "Langfuse Worker failed to start properly"
         exit 1
     fi
