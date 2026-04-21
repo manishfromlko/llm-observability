@@ -19,6 +19,12 @@ Minimal Docker Compose setup for LiteLLM with Langfuse callback integration.
 4. Access LiteLLM Proxy at `http://localhost:4000`
 5. Prometheus metrics at `http://localhost:9191`
 
+## Admin UI Access
+
+Access the LiteLLM admin UI at `http://localhost:4000/admin/` with:
+- **Username**: `admin`
+- **Password**: `sk-1234` (master key)
+
 ## Services
 
 - **litellm**: LiteLLM proxy server (port 4000)

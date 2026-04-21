@@ -16,6 +16,12 @@ Minimal Docker Compose setup for Langfuse.
 
 3. Access Langfuse Web UI at `http://localhost:3000`
 
+## Admin UI Access
+
+Access the Langfuse web UI at `http://localhost:3000` with:
+- **Email**: `admin@example.com`
+- **Password**: `admin123`
+
 ## Services
 
 - **langfuse-web**: Main web interface (port 3000)
