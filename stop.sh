@@ -38,7 +38,7 @@ main() {
     print_status "Stopping LiteLLM services..."
     if [ -f "litellm/docker-compose.yml" ]; then
         cd litellm
-        docker-compose down || print_warning "LiteLLM services may not have been running"
+        docker compose down || print_warning "LiteLLM services may not have been running"
         cd ..
     else
         print_warning "LiteLLM docker-compose.yml not found"
@@ -48,7 +48,7 @@ main() {
     print_status "Stopping Langfuse services..."
     if [ -f "langfuse/docker-compose.yml" ]; then
         cd langfuse
-        docker-compose down || print_warning "Langfuse services may not have been running"
+        docker compose down || print_warning "Langfuse services may not have been running"
         cd ..
     else
         print_warning "Langfuse docker-compose.yml not found"
@@ -69,14 +69,14 @@ if [ "$1" = "-v" ] || [ "$1" = "--volumes" ]; then
         # Stop and remove volumes for LiteLLM
         if [ -f "litellm/docker-compose.yml" ]; then
             cd litellm
-            docker-compose down -v || print_warning "LiteLLM services cleanup failed"
+            docker compose down -v || print_warning "LiteLLM services cleanup failed"
             cd ..
         fi
 
         # Stop and remove volumes for Langfuse
         if [ -f "langfuse/docker-compose.yml" ]; then
             cd langfuse
-            docker-compose down -v || print_warning "Langfuse services cleanup failed"
+            docker compose down -v || print_warning "Langfuse services cleanup failed"
             cd ..
         fi
 

@@ -67,13 +67,13 @@ check_existing_services() {
     local litellm_running=false
 
     # Check if Langfuse containers are running
-    if docker-compose -f langfuse/docker-compose.yml ps | grep -q "Up"; then
+    if docker compose -f langfuse/docker-compose.yml ps | grep -q "Up"; then
         langfuse_running=true
         print_warning "Langfuse services are already running"
     fi
 
     # Check if LiteLLM containers are running
-    if docker-compose -f litellm/docker-compose.yml ps | grep -q "Up"; then
+    if docker compose -f litellm/docker-compose.yml ps | grep -q "Up"; then
         litellm_running=true
         print_warning "LiteLLM services are already running"
     fi
@@ -157,7 +157,7 @@ EOF
     # Start Langfuse services
     print_status "Starting Langfuse services..."
     cd langfuse
-    docker-compose up -d
+    docker compose up -d
 
     # Wait for Langfuse to be ready
     if ! check_service_health "Langfuse Web" "http://localhost:3000"; then
@@ -175,7 +175,7 @@ EOF
     # Start LiteLLM services
     print_status "Starting LiteLLM services..."
     cd litellm
-    docker-compose up -d
+    docker compose up -d
 
     # Wait for LiteLLM to be ready
     if ! check_service_health "LiteLLM" "http://localhost:4000/health/liveliness"; then
