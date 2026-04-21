@@ -2,6 +2,10 @@
 
 set -e
 
+# Get script directory for relative paths
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+cd "$SCRIPT_DIR"
+
 # Colors for output
 RED='\033[0;31m'
 GREEN='\033[0;32m'
@@ -83,5 +87,4 @@ if [ "$1" = "-v" ] || [ "$1" = "--volumes" ]; then
     fi
 else
     main "$@"
-fi</content>
-<parameter name="filePath">/Users/manish/mount/llm-infra/stop.sh
+fi

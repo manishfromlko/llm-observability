@@ -2,6 +2,10 @@
 
 set -e
 
+# Get script directory for relative paths
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+cd "$SCRIPT_DIR"
+
 # Colors for output
 RED='\033[0;31m'
 GREEN='\033[0;32m'
@@ -118,7 +122,7 @@ main() {
     print_status "Configuring Langfuse for headless initialization..."
 
     # Remove any existing LANGFUSE_INIT_* variables
-    sed -i '/^LANGFUSE_INIT_/d' langfuse/.env
+    sed -i '' '/^LANGFUSE_INIT_/d' langfuse/.env
 
     # Add headless initialization variables
     cat >> langfuse/.env << EOF
@@ -139,7 +143,7 @@ EOF
     print_status "Configuring LiteLLM with Langfuse credentials..."
 
     # Remove existing Langfuse variables if any
-    sed -i '/^LANGFUSE_/d' litellm/.env
+    sed -i '' '/^LANGFUSE_/d' litellm/.env
 
     # Add Langfuse configuration
     cat >> litellm/.env << EOF
@@ -200,5 +204,4 @@ EOF
 }
 
 # Run main function
-main "$@"</content>
-<parameter name="filePath">/Users/manish/mount/llm-infra/start.sh
+main "$@"
